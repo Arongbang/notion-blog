@@ -8,14 +8,17 @@
 if [ -f "$CLAUDE_PROJECT_DIR/.env" ]; then
     source "$CLAUDE_PROJECT_DIR/.env"
 else
-    echo "오류: .env 파일을 찾을 수 없습니다: $CLAUDE_PROJECT_DIR/.env" >&2
-    exit 1
+    # .env가 없으면 Slack 알림을 건너뜀 (훅 에러 방지)
+    exit 0
 fi
+
+# CRLF로 저장된 .env 대응: 값 끝의 CR 문자 제거
+SLACK_WEBHOOK_URL="$(printf "%s" "$SLACK_WEBHOOK_URL" | tr -d '\r')"
 
 # Slack 웹훅 URL 확인
 if [ -z "$SLACK_WEBHOOK_URL" ]; then
-    echo "오류: SLACK_WEBHOOK_URL이 설정되지 않았습니다." >&2
-    exit 1
+    # 웹훅 URL이 없으면 Slack 알림을 건너뜀 (훅 에러 방지)
+    exit 0
 fi
 
 # JSON 입력에서 메시지 추출 (있는 경우)
